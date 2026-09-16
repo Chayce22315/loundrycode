@@ -23,8 +23,11 @@ public struct BuildRequest: Sendable {
 
 public actor LoundryOrchestrator {
     private var state = BuildState()
+    private let planner: ProjectPlanner
 
-    public init() {}
+    public init(planner: ProjectPlanner = ProjectPlanner()) {
+        self.planner = planner
+    }
 
     public func currentState() -> BuildState {
         state
@@ -37,6 +40,7 @@ public actor LoundryOrchestrator {
                     try await run(request, continuation: continuation)
                     continuation.finish()
                 } catch {
+                    state.setPhase(.failed)
                     continuation.yield(.failed(error.localizedDescription))
                     continuation.finish(throwing: error)
                 }
@@ -52,65 +56,124 @@ public actor LoundryOrchestrator {
         continuation.yield(.receivedIdea(request.project.idea))
 
         state.setPhase(.planning)
-        continuation.yield(.planning("turning the idea into an executable project plan"))
+        continuation.yield(.planning("checking targets and execution capabilities"))
 
-        state.setPhase(.generating)
-        continuation.yield(.modelStarted(provider: request.model.providerID, model: request.model.modelID))
+        var instruction = "generate the project"
+        var lastFailure: String?
 
-        var generatedCommands: [EnvironmentCommand] = []
+        for attempt in 0...request.maxRepairAttempts {
+            if attempt > 0 {
+                state.setPhase(.repairing)
+                state.incrementAttempt()
+                instruction = "repair the project after this failure: \(lastFailure ?? \"unknown build failure\")"
+                continuation.yield(.retrying(attempt: state.attempt, reason: lastFailure ?? "build failed"))
+            }
+
+            state.setPhase(.generating)
+            continuation.yield(.modelStarted(provider: request.model.providerID, model: request.model.modelID))
+
+            let generated = try await generate(
+                request: request,
+                instruction: instruction,
+                continuation: continuation
+            )
+
+            let manifest = ProjectManifest(
+                files: generated.files,
+                buildCommands: generated.commands
+            )
+
+            _ = try planner.makePlan(
+                for: request.project,
+                manifest: manifest,
+                in: request.environment
+            )
+
+            state.setPhase(.building)
+            let buildResult = try await execute(
+                generated.commands,
+                environment: request.environment,
+                continuation: continuation
+            )
+
+            if buildResult.succeeded {
+                state.setPhase(.testing)
+                continuation.yield(.planning("running verification passes"))
+                continuation.yield(.testPassed("generated build commands"))
+                state.setPhase(.completed)
+                continuation.yield(.completed)
+                return
+            }
+
+            lastFailure = buildResult.failure
+        }
+
+        throw EnvironmentError.commandFailed(1)
+    }
+
+    private func generate(
+        request: BuildRequest,
+        instruction: String,
+        continuation: AsyncThrowingStream<ActivityEvent, Error>.Continuation
+    ) async throws -> GeneratedOutput {
+        var files: [ProjectFile] = []
+        var commands: [EnvironmentCommand] = []
+
         for try await event in request.model.generate(
-            for: ModelRequest(project: request.project, instruction: "generate the project")
+            for: ModelRequest(project: request.project, instruction: instruction)
         ) {
             switch event {
             case .text(let text):
                 continuation.yield(.modelOutput(text))
             case .file(let path, let contents):
                 try await request.environment.writeFile(path: path, contents: contents)
+                files.append(ProjectFile(path: path, contents: contents))
                 continuation.yield(.fileWritten(path: path))
             case .command(let command):
-                generatedCommands.append(command)
+                commands.append(command)
             case .finished:
                 break
             }
         }
 
-        state.setPhase(.building)
-        for command in generatedCommands {
+        return GeneratedOutput(files: files, commands: commands)
+    }
+
+    private func execute(
+        _ commands: [EnvironmentCommand],
+        environment: any ExecutionEnvironment,
+        continuation: AsyncThrowingStream<ActivityEvent, Error>.Continuation
+    ) async throws -> CommandBatchResult {
+        guard !commands.isEmpty else {
+            return CommandBatchResult(succeeded: true, failure: nil)
+        }
+
+        for command in commands {
             continuation.yield(.commandStarted(command))
-            let result = try await request.environment.run(command)
+            let result = try await environment.run(command)
             if !result.output.isEmpty {
                 continuation.yield(.commandOutput(result.output))
             }
             continuation.yield(.commandFinished(exitCode: result.exitCode))
-            if !result.succeeded {
-                try await repair(
-                    request: request,
-                    failure: "command exited with \(result.exitCode)",
-                    continuation: continuation
+
+            guard result.succeeded else {
+                return CommandBatchResult(
+                    succeeded: false,
+                    failure: "\(command.displayCommand) exited with \(result.exitCode): \(result.output)"
                 )
             }
         }
 
-        state.setPhase(.testing)
-        continuation.yield(.planning("running verification passes"))
-        continuation.yield(.testPassed("orchestration pipeline"))
-
-        state.setPhase(.completed)
-        continuation.yield(.completed)
+        return CommandBatchResult(succeeded: true, failure: nil)
     }
+}
 
-    private func repair(
-        request: BuildRequest,
-        failure: String,
-        continuation: AsyncThrowingStream<ActivityEvent, Error>.Continuation
-    ) async throws {
-        guard request.maxRepairAttempts > 0 else {
-            state.setPhase(.failed)
-            throw EnvironmentError.commandFailed(1)
-        }
+private struct GeneratedOutput: Sendable {
+    let files: [ProjectFile]
+    let commands: [EnvironmentCommand]
+}
 
-        state.setPhase(.repairing)
-        state.incrementAttempt()
-        continuation.yield(.retrying(attempt: state.attempt, reason: failure))
-    }
+private struct CommandBatchResult: Sendable {
+    let succeeded: Bool
+    let failure: String?
 }
