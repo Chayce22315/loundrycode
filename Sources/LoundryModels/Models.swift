@@ -71,7 +71,7 @@ public struct EnvironmentCommand: Codable, Sendable, Hashable {
     }
 
     private static func quote(_ value: String) -> String {
-        guard value.contains(where: { $0.isWhitespace || $0 == '"' }) else { return value }
+        guard value.contains(where: { $0.isWhitespace || $0 == "\"" }) else { return value }
         return "\"\(value.replacingOccurrences(of: "\"", with: "\\\""))\""
     }
 }
