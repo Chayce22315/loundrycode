@@ -27,7 +27,11 @@ final class LoundryCoreTests: XCTestCase {
             spec: EnvironmentSpec(operatingSystem: .linux, shell: .bash)
         )
         let model = StubModelProvider()
-        let project = LoundryProject(name: "hello", idea: "make a tiny app")
+        let project = LoundryProject(
+            name: "hello",
+            idea: "make a tiny app",
+            targets: [.linux]
+        )
         let orchestrator = LoundryOrchestrator()
 
         var summaries: [String] = []
