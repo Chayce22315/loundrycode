@@ -1,0 +1,72 @@
+# xcode / swift
+DerivedData/
+.build/
+.swiftpm/
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+
+# macos
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ios / xcode generated
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.mobileprovision
+
+# dependencies
+Pods/
+Carthage/Build/
+
+# node / javascript
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# rust
+target/
+
+# environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+
+# local ai / model caches
+.ai-cache/
+.models/
+.cache/
+
+# generated artifacts
+artifacts/
+build/
+dist/
+tmp/
+temp/
+
+# editor / ide
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# logs
+*.log
+
+# os junk
+Thumbs.db
+Desktop.ini
