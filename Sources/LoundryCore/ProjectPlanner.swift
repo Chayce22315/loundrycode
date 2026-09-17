@@ -34,12 +34,26 @@ public struct ProjectPlanner: Sendable {
             throw PlannerError.emptyProjectName
         }
 
+        guard !project.targets.isEmpty else {
+            throw PlannerError.noBuildTargets
+        }
+
         for target in project.targets {
             guard isTargetCompatible(target, with: environment.spec.operatingSystem) else {
                 throw PlannerError.incompatibleTarget(
                     target: target,
                     operatingSystem: environment.spec.operatingSystem
                 )
+            }
+        }
+
+        if let described = environment as? any DescribedExecutionEnvironment {
+            guard described.capabilities.canPersistFiles else {
+                throw PlannerError.filesystemUnavailable
+            }
+
+            if !manifest.buildCommands.isEmpty && !described.capabilities.canExecuteProcesses {
+                throw PlannerError.processExecutionUnavailable
             }
         }
 
@@ -65,5 +79,8 @@ public struct ProjectPlanner: Sendable {
 public enum PlannerError: Error, Sendable, Equatable {
     case emptyIdea
     case emptyProjectName
+    case noBuildTargets
     case incompatibleTarget(target: BuildTarget, operatingSystem: OperatingSystem)
+    case filesystemUnavailable
+    case processExecutionUnavailable
 }
