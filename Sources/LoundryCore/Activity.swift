@@ -1,4 +1,5 @@
 import Foundation
+import LoundryModels
 
 public enum ActivityEvent: Sendable, Hashable {
     case receivedIdea(String)
