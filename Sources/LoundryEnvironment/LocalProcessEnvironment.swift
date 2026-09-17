@@ -1,12 +1,13 @@
 import Foundation
-import LoundryEnvironment
 import LoundryModels
 
-public struct LocalProcessEnvironment: ExecutionEnvironment {
+public struct LocalProcessEnvironment: ExecutionEnvironment, DescribedExecutionEnvironment {
     public let spec: EnvironmentSpec
+    public let capabilities: EnvironmentCapabilities
 
-    public init(spec: EnvironmentSpec) {
+    public init(spec: EnvironmentSpec, capabilities: EnvironmentCapabilities? = nil) {
         self.spec = spec
+        self.capabilities = capabilities ?? Self.defaultCapabilities(for: spec.operatingSystem, shell: spec.shell)
     }
 
     public func run(_ command: EnvironmentCommand) async throws -> EnvironmentResult {
@@ -44,7 +45,10 @@ public struct LocalProcessEnvironment: ExecutionEnvironment {
             at: url.deletingLastPathComponent(),
             withIntermediateDirectories: true
         )
-        try contents.data(using: .utf8)?.write(to: url, options: .atomic)
+        guard let data = contents.data(using: .utf8) else {
+            throw EnvironmentError.invalidPath(path)
+        }
+        try data.write(to: url, options: .atomic)
     }
 
     public func readFile(path: String) async throws -> String {
@@ -57,5 +61,25 @@ public struct LocalProcessEnvironment: ExecutionEnvironment {
 
     public func exists(path: String) async -> Bool {
         FileManager.default.fileExists(atPath: path)
+    }
+
+    private static func defaultCapabilities(
+        for operatingSystem: OperatingSystem,
+        shell: Shell
+    ) -> EnvironmentCapabilities {
+        let languages: Set<ProjectLanguage> = [
+            .swift, .objectiveC, .rust, .go, .cpp, .c, .csharp,
+            .java, .kotlin, .python, .javascript, .typescript,
+            .ruby, .php, .zig, .dart, .lua, .shell
+        ]
+
+        return EnvironmentCapabilities(
+            operatingSystem: operatingSystem,
+            shells: [shell],
+            languages: languages,
+            canExecuteProcesses: true,
+            canPersistFiles: true,
+            networkAccess: .restricted
+        )
     }
 }
