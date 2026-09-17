@@ -14,9 +14,7 @@ instead of making you assemble a giant pile of tools yourself, loundrycode aims 
 
 **very early development.**
 
-this repository is currently the foundation for the project. the app architecture, ui, ai orchestration, execution environments, and model integrations will be built here over time.
-
-nothing in this readme should be interpreted as a promise that every planned feature already exists. this document describes the direction and architecture we are building toward.
+this repository is currently building the foundation for the project. the app architecture, ui, ai orchestration, execution environments, and model integrations will be built here over time.
 
 ## 🧺 what is loundrycode?
 
@@ -79,6 +77,45 @@ its long-term architecture is closer to an **ai software workshop**:
 
 ![loundrycode architecture](docs/assets/architecture.svg)
 
+## 🧩 polyglot by design
+
+**loundrycode itself is polyglot.** there is no required implementation language for the entire product.
+
+each subsystem can use whatever language and runtime actually fits its job. the important part is the contract between components, not the language behind that contract.
+
+for example:
+
+```text
+loundrycode
+│
+├── ios ui              → swift / swiftui
+├── web ui              → typescript / react
+├── orchestration      → rust / go / c++ / ...
+├── agents             → python / rust / typescript / ...
+├── model adapters      → whatever fits the provider
+├── execution runner    → rust / go / native tooling
+├── windows tooling     → c# / c++ / rust / ...
+├── linux tooling       → rust / go / native tooling
+└── utilities           → whatever fits
+```
+
+these are examples, not hard requirements. a component can be rewritten in another language without changing the overall architecture as long as its contract remains compatible.
+
+### language-neutral contracts
+
+components communicate through explicit contracts for things such as:
+
+- projects and manifests
+- model requests and streamed responses
+- environment commands and results
+- build plans and diagnostics
+- activity events
+- capabilities
+
+those contracts can be represented through language-specific adapters, but the architecture does not depend on swift, rust, python, typescript, or any other single language.
+
+see [`docs/polyglot-architecture.md`](docs/polyglot-architecture.md) and [`contracts/README.md`](contracts/README.md).
+
 ## 🖥️ ai's environment
 
 one of the biggest ideas in loundrycode is **ai's environment**.
@@ -127,8 +164,6 @@ ai's environment
 
 this abstraction is important because loundrycode should not depend on one giant computer sitting in a mysterious warehouse somewhere. ☁️🖥️
 
-execution can eventually be routed to different backends such as local machines, hosted runners, github actions, user-provided servers, or other compatible compute providers.
-
 ## 🤖 ai orchestration
 
 loundrycode itself is intended to act as the **orchestrator**.
@@ -150,25 +185,11 @@ possible responsibilities include:
 - retrying failed work
 - presenting useful progress to the user
 
-retries should always have sensible limits. a broken build should not summon an infinite army of agents at 3:00 am. 😭
-
 ## 👀 visible ai activity
 
 loundrycode should make ai work **visible without exposing private chain-of-thought**.
 
-there will be a visible thinking/processing experience that can communicate high-level activity such as:
-
-- understanding the request
-- planning the architecture
-- generating a project
-- installing dependencies
-- compiling
-- running tests
-- diagnosing an error
-- applying a fix
-- trying again
-
-this gives the user a useful window into progress while keeping private internal reasoning private.
+there will be a visible thinking/processing experience that can communicate high-level activity such as understanding the request, planning architecture, generating files, installing dependencies, compiling, running tests, diagnosing an error, applying a fix, and trying again.
 
 ## ✖️ the extra menu
 
@@ -184,135 +205,56 @@ that view is intended to let you watch the actual execution environment doing it
 
 **unorthodox** is the more powerful version of the loundrycode experience.
 
-it is intended to provide:
+it is intended to provide stronger models, stronger subagents, more aggressive ai workflows, some additional visual polish, and more compute capacity.
 
-- stronger models
-- stronger subagents
-- more aggressive ai workflows
-- some additional visual polish
-- more compute capacity
-
-unorthodox is not meant to turn the normal app into a locked box. the goal is for free users to be able to experience it too, with usage limits based on the compute cost.
-
-### usage model
-
-there are **no credits** in loundrycode.
-
-instead, unorthodox usage is handled as a rolling availability system:
-
-| plan | unorthodox slots |
-| --- | ---: |
-| free | ~10 |
-| pro | ~20 |
-
-slots refresh over time, with the intended maximum refresh window being around several hours rather than a huge multi-day reset.
-
-when free usage is temporarily exhausted, the app should simply explain that unorthodox is unavailable until usage refreshes. it should not turn the interface into a credit vending machine.
-
-## 💳 pro
-
-pro is intended primarily to provide **more expensive compute capacity** for people who need it.
-
-loundrycode should not constantly interrupt the user with giant upgrade banners, promo codes, or sales popups.
-
-pro should be discoverable, but quiet.
+there are **no credits** in loundrycode. usage is intended to refresh over time rather than becoming a credit vending machine.
 
 ## 📱 ios-first
 
-loundrycode is being designed around an ios-first experience.
+loundrycode is being designed around an ios-first experience. that means the interface should be designed for touch, small screens, and fast interactions.
 
-that means the interface should be designed for touch, small screens, and fast interactions instead of taking a desktop application and shrinking it until every button becomes a microscopic pancake.
+other platform shells can exist alongside the ios application. the ios shell does not dictate the implementation language of the rest of the product.
 
-long-term, the project can coordinate remote execution when ios itself cannot perform a particular build or runtime task locally.
-
-## 🏗️ planned architecture
+## 🏗️ repository architecture
 
 an early conceptual repository layout looks like this:
 
 ```text
 loundrycode/
-├── app/
-│   ├── ui/
-│   ├── onboarding/
-│   └── loundy/
-├── core/
-│   ├── ai/
+├── app/                    # platform-facing applications
+│   ├── ios/                # native ios shell
+│   ├── macos/              # native macos shell when needed
+│   └── web/                # web shell when needed
+├── components/             # independently implementable product systems
+│   ├── orchestration/
 │   ├── agents/
-│   ├── projects/
-│   ├── environments/
-│   └── workflows/
-├── environments/
+│   ├── model-adapters/
+│   ├── execution/
+│   └── project-system/
+├── contracts/              # language-neutral public boundaries
+├── environments/            # environment adapters and runners
 │   ├── linux/
 │   ├── windows/
-│   └── other/
-├── runtimes/
-│   ├── python/
-│   ├── javascript/
-│   ├── rust/
-│   └── ...
-├── backend/
-│   ├── model-providers/
-│   ├── execution/
-│   └── orchestration/
+│   └── macos/
+├── runtimes/               # runtime/toolchain integrations
+├── backend/                # deployable backend services
 ├── docs/
 │   └── assets/
-└── .github/
+└── .github/                # construction/release system for loundrycode
     └── workflows/
 ```
 
-this is a direction, not a claim that all of these folders already exist.
+this is a direction, not a claim that every directory already exists.
 
-## 🧩 model providers
+## 🏗️ github actions boundary
 
-loundrycode should avoid being permanently tied to one ai provider.
+github actions is the **construction crew for loundrycode itself**.
 
-an eventual provider layer can make it possible to connect different models and services through a common interface while allowing the orchestrator to choose what is appropriate for a task.
+it builds, tests, packages, and releases the loundrycode product. it is **not** loundrycode's runtime worker and should not become the backend that builds every user project.
 
-that architecture also makes it easier to support:
-
-- different model families
-- hosted models
-- compatible apis
-- specialized coding models
-- future providers
-- user-provided endpoints where appropriate
-
-## 🛠️ execution backends
-
-because loundrycode is not being built around owning a giant data center, compute should be treated as an interchangeable backend.
-
-possible execution backends include:
-
-- local execution
-- github actions
-- hosted runners
-- remote machines
-- user-provided servers
-- gpu-backed services
-- other compatible execution providers
-
-this lets the app grow without forcing the project to own every compiler, gpu, and server on earth.
-
-## 🎨 loundy
-
-loundy is the little mascot living at the center of the experience.
-
-for the early onboarding experience, loundy can be animated without requiring complicated animation software. a sequence of carefully designed monospace/ascii frames can create a spinning or changing head animation.
-
-possible states include:
-
-- idle
-- thinking
-- processing
-- compiling
-- success
-- error
-
-loundy should feel calm and competent, with just enough personality to make the system feel alive.
+user-generated projects execute through loundrycode's own environment abstraction. that abstraction can later be backed by local sandboxes, containers, virtual machines, hosted workers, or other compatible infrastructure.
 
 ## 🧪 development philosophy
-
-loundrycode is being built around a few principles:
 
 ### simple outside, huge inside
 
@@ -322,21 +264,21 @@ the user interface should feel small and understandable even if the backend is e
 
 when the ai says it is building or testing something, the goal is for real execution to happen somewhere appropriate.
 
+### polyglot by design
+
+use the right language for each subsystem. keep boundaries stable and implementation details replaceable.
+
 ### no credit treadmill
 
 usage limits may exist where compute has a real cost, but the product should not revolve around artificial little coins.
 
-### model-agnostic architecture
-
-models and providers should be replaceable pieces rather than the entire identity of the application.
-
 ### visible progress
 
-users should be able to understand what the system is currently doing without being shown private chain-of-thought.
+users should understand what the system is currently doing without being shown private chain-of-thought.
 
 ### fail, learn, retry
 
-build errors are part of software development. loundrycode should be designed to diagnose failures and try useful fixes instead of immediately giving up.
+build errors are part of software development. loundrycode should diagnose failures and try useful fixes instead of immediately giving up.
 
 ## 🚀 development roadmap
 
@@ -345,6 +287,8 @@ build errors are part of software development. loundrycode should be designed to
 - [x] repository created
 - [x] project direction documented
 - [x] gitignore added
+- [x] language-neutral architecture documented
+- [x] polyglot component boundary documented
 - [ ] ios application shell
 - [ ] initial loundy onboarding
 
