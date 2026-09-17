@@ -12,9 +12,9 @@ instead of making you assemble a giant pile of tools yourself, loundrycode aims 
 
 ## 🚧 project status
 
-**very early development.**
+**v0.2.0 • foundation + first logic layer**
 
-this repository is currently building the foundation for the project. the app architecture, ui, ai orchestration, execution environments, and model integrations will be built here over time.
+v0.2 establishes the first working architecture for planning, model-driven generation, environment execution, build retries, capability validation, and visible activity events. the ios application shell and production execution backends are still ahead.
 
 ## 🧺 what is loundrycode?
 
@@ -185,11 +185,15 @@ possible responsibilities include:
 - retrying failed work
 - presenting useful progress to the user
 
+v0.2 now contains the first implementation of this flow through `loundrycore`, including a model-provider abstraction, project planner, environment execution, and repair loop.
+
 ## 👀 visible ai activity
 
 loundrycode should make ai work **visible without exposing private chain-of-thought**.
 
 there will be a visible thinking/processing experience that can communicate high-level activity such as understanding the request, planning architecture, generating files, installing dependencies, compiling, running tests, diagnosing an error, applying a fix, and trying again.
+
+v0.2 provides the structured `activityevent` stream that the future ios ui can consume.
 
 ## ✖️ the extra menu
 
@@ -289,19 +293,25 @@ build errors are part of software development. loundrycode should diagnose failu
 - [x] gitignore added
 - [x] language-neutral architecture documented
 - [x] polyglot component boundary documented
+- [x] project/environment/model contracts established
+- [x] initial orchestration logic
+- [x] build retry path
+- [x] capability-aware planning
+- [x] structured build diagnostics
 - [ ] ios application shell
 - [ ] initial loundy onboarding
 
 ### phase 1: first working builder
 
-- [ ] project creation
-- [ ] basic ai provider interface
+- [ ] project creation ui
+- [x] basic ai provider interface
 - [ ] agent/tool system
-- [ ] filesystem operations
-- [ ] terminal environment
+- [x] filesystem operations
+- [x] terminal environment abstraction
+- [x] local execution adapter
 - [ ] linux execution environment
-- [ ] build/test loop
-- [ ] retry handling
+- [ ] build/test loop with real diagnostics
+- [x] retry handling
 
 ### phase 2: ai's environment
 
