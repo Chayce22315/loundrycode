@@ -65,8 +65,9 @@ public actor LoundryOrchestrator {
             if attempt > 0 {
                 state.setPhase(.repairing)
                 state.incrementAttempt()
-                instruction = "repair the project after this failure: \(lastFailure ?? \"unknown build failure\")"
-                continuation.yield(.retrying(attempt: state.attempt, reason: lastFailure ?? "build failed"))
+                let reason = lastFailure ?? "unknown build failure"
+                instruction = "repair the project after this failure: \(reason)"
+                continuation.yield(.retrying(attempt: state.attempt, reason: reason))
             }
 
             state.setPhase(.generating)
