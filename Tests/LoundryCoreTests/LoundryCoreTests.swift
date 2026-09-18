@@ -14,11 +14,18 @@ final class LoundryCoreTests: XCTestCase {
     func testUsageLedgerRefreshesAfterWindow() async {
         let ledger = UsageLedger()
         let start = Date(timeIntervalSince1970: 1_000)
-        XCTAssertTrue(await ledger.consumeUnorthodoxSlot(now: start))
-        let before = await ledger.snapshot(now: start.addingTimeInterval(UsageLedger.refreshInterval - 1))
+
+        let consumed = await ledger.consumeUnorthodoxSlot(now: start)
+        XCTAssertTrue(consumed)
+
+        let before = await ledger.snapshot(
+            now: start.addingTimeInterval(UsageLedger.refreshInterval - 1)
+        )
         XCTAssertEqual(before.usedUnorthodoxSlots, 1)
 
-        let after = await ledger.snapshot(now: start.addingTimeInterval(UsageLedger.refreshInterval + 1))
+        let after = await ledger.snapshot(
+            now: start.addingTimeInterval(UsageLedger.refreshInterval + 1)
+        )
         XCTAssertEqual(after.usedUnorthodoxSlots, 0)
     }
 
@@ -44,7 +51,9 @@ final class LoundryCoreTests: XCTestCase {
         XCTAssertTrue(summaries.contains("idea received"))
         XCTAssertTrue(summaries.contains("wrote /workspace/hello.txt"))
         XCTAssertTrue(summaries.contains("project completed"))
-        XCTAssertEqual(await orchestrator.currentState().phase, .completed)
+
+        let state = await orchestrator.currentState()
+        XCTAssertEqual(state.phase, .completed)
     }
 }
 
