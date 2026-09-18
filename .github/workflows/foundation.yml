@@ -18,18 +18,39 @@ jobs:
         os:
           - macos-15
           - ubuntu-latest
-
     steps:
       - name: check out loundrycode
         uses: actions/checkout@v4
-
       - name: select swift toolchain
         uses: swift-actions/setup-swift@v2
         with:
           swift-version: "6.2"
-
       - name: build
         run: swift build
-
       - name: test
         run: swift test
+
+  unsigned-ipa:
+    name: build unsigned ios ipa
+    runs-on: macos-15
+    needs: swift-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: check out loundrycode
+        uses: actions/checkout@v4
+      - name: show xcode
+        run: xcodebuild -version
+      - name: archive unsigned app
+        run: |
+          xcodebuild -project LoundryCode.xcodeproj -scheme LoundryCode -configuration Release -sdk iphoneos -archivePath build/LoundryCode.xcarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" archive
+      - name: package unsigned ipa
+        run: |
+          mkdir -p build/Payload
+          cp -R build/LoundryCode.xcarchive/Products/Applications/LoundryCode.app build/Payload/
+          /usr/bin/zip -qry build/loundrycode-unsigned.ipa build/Payload
+      - name: upload unsigned ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: loundrycode-unsigned-ipa
+          path: build/loundrycode-unsigned.ipa
+          if-no-files-found: error
