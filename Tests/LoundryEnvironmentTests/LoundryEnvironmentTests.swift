@@ -8,8 +8,12 @@ final class LoundryEnvironmentTests: XCTestCase {
             spec: EnvironmentSpec(operatingSystem: .linux, shell: .bash)
         )
         try await environment.writeFile(path: "/workspace/test.txt", contents: "hello")
-        XCTAssertTrue(await environment.exists(path: "/workspace/test.txt"))
-        XCTAssertEqual(try await environment.readFile(path: "/workspace/test.txt"), "hello")
+
+        let exists = await environment.exists(path: "/workspace/test.txt")
+        let contents = try await environment.readFile(path: "/workspace/test.txt")
+
+        XCTAssertTrue(exists)
+        XCTAssertEqual(contents, "hello")
     }
 
     func testInMemoryEnvironmentCanStubCommandResults() async throws {
