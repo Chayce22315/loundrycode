@@ -58,7 +58,9 @@ final class V02Tests: XCTestCase {
                 if case .retrying(let attempt, _) = event { return attempt == 1 }
                 return false
             })
-            XCTAssertEqual(await orchestrator.currentState().phase, .failed)
+
+            let state = await orchestrator.currentState()
+            XCTAssertEqual(state.phase, .failed)
         }
     }
 }
