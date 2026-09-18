@@ -12,11 +12,11 @@ instead of making you assemble a giant pile of tools yourself, loundrycode aims 
 
 ## 🚧 project status
 
-**v0.2.0 • foundation + first logic layer**
+**v0.3.0 • native ios app shell + unsigned ipa pipeline**
 
-v0.2 establishes the first working architecture for planning, model-driven generation, environment execution, build retries, capability validation, and visible activity events. the ios application shell and production execution backends are still ahead.
+v0.3 keeps that foundation and adds the first native ios app shell, a vibrant swiftui interface, a code-driven spinning loundy mascot, svg visual assets, and a github actions pipeline that packages an unsigned ipa for sidestore.
 
-## 🧺 what is loundrycode?
+## 📱 v0.3 ios app\n\nthe v0.3 app is a native swiftui shell with a bright gradient interface, idea composer, loundy mascot, and an **ai's environment** surface for the future terminal/execution layer.\n\nfor device installation, github actions archives the app with code signing disabled and packages it as `loundrycode-unsigned.ipa`. sidestore can then handle signing on the device.\n\nvisual branding assets and icons live as `.svg` files under `Sources/LoundryApp/Assets/`.\n\n## 🧺 what is loundrycode?
 
 loundrycode is intended to be an **ai-powered app development environment for ios** that hides as much unnecessary complexity as possible without hiding what the ai is actually doing.
 
