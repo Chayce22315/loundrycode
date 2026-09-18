@@ -1,0 +1,26 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+AA000001 = {isa = PBXBuildFile; fileRef = AA100001; };
+AA100001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoundryCodeApp.swift; sourceTree = "<group>"; };
+AA200001 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LoundryCode.app; sourceTree = BUILT_PRODUCTS_DIR; };
+AA300001 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+AA400001 = {isa = PBXGroup; children = (AA400002, AA400003); sourceTree = "<group>"; };
+AA400002 = {isa = PBXGroup; children = (AA100001,); path = Sources/LoundryApp; sourceTree = "<group>"; };
+AA400003 = {isa = PBXGroup; children = (AA200001,); name = Products; sourceTree = "<group>"; };
+AA500001 = {isa = PBXNativeTarget; buildConfigurationList = AA600001; buildPhases = (AA700001, AA300001, AA700002); buildRules = (); dependencies = (); name = LoundryCode; productName = LoundryCode; productReference = AA200001; productType = "com.apple.product-type.application"; };
+AA800001 = {isa = PBXProject; attributes = { LastUpgradeCheck = 1600; TargetAttributes = { AA500001 = { CreatedOnToolsVersion = 16.0; }; }; }; buildConfigurationList = AA800002; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; mainGroup = AA400001; productRefGroup = AA400003; projectDirPath = ""; projectRoot = ""; targets = (AA500001); };
+AA700001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (AA000001); runOnlyForDeploymentPostprocessing = 0; };
+AA700002 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+AA900001 = {isa = XCBuildConfiguration; buildSettings = { IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.chayce.loundrycode; PRODUCT_NAME = LoundryCode; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; SDKROOT = iphoneos; }; name = Debug; };
+AA900002 = {isa = XCBuildConfiguration; buildSettings = { IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.chayce.loundrycode; PRODUCT_NAME = LoundryCode; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; SDKROOT = iphoneos; }; name = Release; };
+AA900003 = {isa = XCBuildConfiguration; buildSettings = { SDKROOT = iphoneos; }; name = Debug; };
+AA900004 = {isa = XCBuildConfiguration; buildSettings = { SDKROOT = iphoneos; }; name = Release; };
+AA600001 = {isa = XCConfigurationList; buildConfigurations = (AA900001, AA900002); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+AA800002 = {isa = XCConfigurationList; buildConfigurations = (AA900003, AA900004); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+	};
+	rootObject = AA800001;
+}
